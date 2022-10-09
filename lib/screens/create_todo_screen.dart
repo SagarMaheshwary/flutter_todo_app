@@ -18,9 +18,16 @@ class _CreateTodoScreenState extends State<CreateTodoScreen> {
   final titleInputController = TextEditingController();
   final descriptionInputController = TextEditingController();
 
-  Future<void> createTodo(String title, String description) async {
+  Future<void> createTodo(
+    String title,
+    String description,
+    VoidCallback onSuccess,
+  ) async {
     final response = await http.post(
       Uri.parse('$apiURL/todos'),
+      headers: <String, String>{
+        'Content-Type': 'application/json',
+      },
       body: jsonEncode(
         <String, String>{
           'title': title,
@@ -30,8 +37,10 @@ class _CreateTodoScreenState extends State<CreateTodoScreen> {
     );
 
     if (response.statusCode == 201) {
-      
+      onSuccess.call();
     }
+
+    throw Exception('Unable to create todo!');
   }
 
   @override
@@ -86,7 +95,11 @@ class _CreateTodoScreenState extends State<CreateTodoScreen> {
                   child: const Text('Submit'),
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
-                      
+                      createTodo(
+                        titleInputController.text,
+                        descriptionInputController.text,
+                        () => Navigator.of(context).pushReplacementNamed('/'),
+                      );
                     }
                   },
                 ),
